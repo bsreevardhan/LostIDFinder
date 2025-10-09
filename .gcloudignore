@@ -1,0 +1,14 @@
+.git
+.gitignore
+*.pyc
+*.pyo
+__pycache__/
+.pythonlibs/
+.uv/
+.env
+.venv
+venv/
+instance/
+*.db
+static/uploads/*
+!static/uploads/.gitkeep
