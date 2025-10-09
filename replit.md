@@ -131,6 +131,10 @@ None specified yet.
 - Configured Google App Engine deployment
 - Added search and filter functionality
 - Implemented photo upload and matching system
+- **Added CSRF protection using Flask-WTF** for all forms
+- Created comprehensive deployment guide (DEPLOYMENT.md)
+- Added security warnings for production deployment
+- Documented Cloud SQL and Cloud Storage migration requirements
 
 ## Future Enhancements
 

@@ -15,8 +15,9 @@ A Flask-based web application for managing lost and found ID cards with secure a
 ## Technology Stack
 
 - **Backend**: Flask (Python)
-- **Database**: SQLite (SQLAlchemy ORM)
+- **Database**: SQLite (SQLAlchemy ORM) - Development only
 - **Authentication**: Flask-Login
+- **Security**: Flask-WTF (CSRF Protection)
 - **Frontend**: Bootstrap 5
 - **File Upload**: Werkzeug
 - **Image Processing**: Pillow
@@ -81,11 +82,22 @@ https://your-app.appspot.com/init-db
 
 ## Security Features
 
-- Secure password hashing with Werkzeug
-- Session-based authentication with Flask-Login
-- File upload validation
-- Admin-only access to verification features
-- Environment-based secret key configuration
+- **CSRF Protection**: All forms protected with Flask-WTF CSRF tokens
+- **Password Security**: Secure password hashing with Werkzeug
+- **Session Management**: Session-based authentication with Flask-Login
+- **File Upload Validation**: Type and size validation for uploaded files
+- **Access Control**: Admin-only access to verification features
+- **Secret Management**: Environment-based secret key configuration
+
+## Production Deployment
+
+⚠️ **Important**: The current implementation uses SQLite and local file storage, which are **NOT suitable for Google App Engine Standard Environment**.
+
+For production deployment, you **must** migrate to:
+- **Database**: Cloud SQL (PostgreSQL)
+- **File Storage**: Google Cloud Storage
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed production deployment instructions and migration guide.
 
 ## Status Workflow
 

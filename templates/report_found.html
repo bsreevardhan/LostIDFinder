@@ -12,6 +12,7 @@
                 </div>
                 <div class="card-body p-4">
                     <form method="POST" action="{{ url_for('report_found') }}" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <h5 class="mb-3">Your Information</h5>
                         <div class="row">
                             <div class="col-md-6 mb-3">
