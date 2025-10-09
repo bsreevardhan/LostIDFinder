@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - ID Recovery System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-speedometer2"></i> Admin Dashboard</h2>
+        <span class="badge bg-primary">Logged in as {{ current_user.username }}</span>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('admin_dashboard') }}" class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="search" placeholder="Search by ID number, name..." value="{{ request.args.get('search', '') }}">
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="reported" {% if request.args.get('status') == 'reported' %}selected{% endif %}>Reported</option>
+                        <option value="verified" {% if request.args.get('status') == 'verified' %}selected{% endif %}>Verified</option>
+                        <option value="matched" {% if request.args.get('status') == 'matched' %}selected{% endif %}>Matched</option>
+                        <option value="recovered" {% if request.args.get('status') == 'recovered' %}selected{% endif %}>Recovered</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="type">
+                        <option value="">All Types</option>
+                        <option value="Student ID" {% if request.args.get('type') == 'Student ID' %}selected{% endif %}>Student ID</option>
+                        <option value="Staff ID" {% if request.args.get('type') == 'Staff ID' %}selected{% endif %}>Staff ID</option>
+                        <option value="Employee ID" {% if request.args.get('type') == 'Employee ID' %}selected{% endif %}>Employee ID</option>
+                        <option value="Library Card" {% if request.args.get('type') == 'Library Card' %}selected{% endif %}>Library Card</option>
+                        <option value="Access Card" {% if request.args.get('type') == 'Access Card' %}selected{% endif %}>Access Card</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-3" id="reportTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="lost-tab" data-bs-toggle="tab" data-bs-target="#lost" type="button">
+                Lost Reports <span class="badge bg-danger">{{ lost_reports|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="found-tab" data-bs-toggle="tab" data-bs-target="#found" type="button">
+                Found Reports <span class="badge bg-success">{{ found_reports|length }}</span>
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="reportTabsContent">
+        <div class="tab-pane fade show active" id="lost" role="tabpanel">
+            <h4 class="mb-3">Lost ID Reports</h4>
+            {% if lost_reports %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID #</th>
+                                <th>Type</th>
+                                <th>Owner Name</th>
+                                <th>Reporter</th>
+                                <th>Date Reported</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in lost_reports %}
+                            <tr>
+                                <td>{{ report.id_number }}</td>
+                                <td>{{ report.id_type }}</td>
+                                <td>{{ report.owner_name }}</td>
+                                <td>{{ report.reporter_name }}<br><small class="text-muted">{{ report.reporter_email }}</small></td>
+                                <td>{{ report.date_reported.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    {% if report.status == 'reported' %}
+                                        <span class="badge bg-warning">Reported</span>
+                                    {% elif report.status == 'verified' %}
+                                        <span class="badge bg-info">Verified</span>
+                                    {% elif report.status == 'matched' %}
+                                        <span class="badge bg-primary">Matched</span>
+                                    {% elif report.status == 'recovered' %}
+                                        <span class="badge bg-success">Recovered</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('verify_lost', report_id=report.id) }}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">No lost reports found.</div>
+            {% endif %}
+        </div>
+
+        <div class="tab-pane fade" id="found" role="tabpanel">
+            <h4 class="mb-3">Found ID Reports</h4>
+            {% if found_reports %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID #</th>
+                                <th>Type</th>
+                                <th>Owner Name</th>
+                                <th>Finder</th>
+                                <th>Date Reported</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in found_reports %}
+                            <tr>
+                                <td>{{ report.id_number or 'N/A' }}</td>
+                                <td>{{ report.id_type }}</td>
+                                <td>{{ report.owner_name or 'Unknown' }}</td>
+                                <td>{{ report.finder_name }}<br><small class="text-muted">{{ report.finder_email }}</small></td>
+                                <td>{{ report.date_reported.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    {% if report.status == 'reported' %}
+                                        <span class="badge bg-warning">Reported</span>
+                                    {% elif report.status == 'verified' %}
+                                        <span class="badge bg-info">Verified</span>
+                                    {% elif report.status == 'matched' %}
+                                        <span class="badge bg-primary">Matched</span>
+                                    {% elif report.status == 'recovered' %}
+                                        <span class="badge bg-success">Recovered</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('verify_found', report_id=report.id) }}" class="btn btn-sm btn-success">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">No found reports available.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

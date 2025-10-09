@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Home - ID Recovery System{% endblock %}
+
+{% block content %}
+<div class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-4 mb-3">Digital Lost ID Card Recovery System</h1>
+        <p class="lead mb-4">Helping you recover lost ID cards quickly and securely</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ url_for('report_lost') }}" class="btn btn-light btn-lg">
+                <i class="bi bi-exclamation-triangle"></i> Report Lost ID
+            </a>
+            <a href="{{ url_for('report_found') }}" class="btn btn-outline-light btn-lg">
+                <i class="bi bi-search"></i> Report Found ID
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row text-center">
+        <div class="col-md-4 mb-4">
+            <div class="card card-hover h-100">
+                <div class="card-body">
+                    <i class="bi bi-card-list display-4 text-primary mb-3"></i>
+                    <h5 class="card-title">Report Lost ID</h5>
+                    <p class="card-text">Lost your ID card? Report it here with details and photos for faster recovery.</p>
+                    <a href="{{ url_for('report_lost') }}" class="btn btn-primary">Report Now</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card card-hover h-100">
+                <div class="card-body">
+                    <i class="bi bi-search display-4 text-success mb-3"></i>
+                    <h5 class="card-title">Report Found ID</h5>
+                    <p class="card-text">Found an ID card? Help return it to the rightful owner by reporting it here.</p>
+                    <a href="{{ url_for('report_found') }}" class="btn btn-success">Report Found</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card card-hover h-100">
+                <div class="card-body">
+                    <i class="bi bi-shield-check display-4 text-info mb-3"></i>
+                    <h5 class="card-title">Secure Verification</h5>
+                    <p class="card-text">Our admin team verifies all reports to ensure secure and accurate ID recovery.</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-info">Admin Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h2 class="text-center mb-4">How It Works</h2>
+        </div>
+        <div class="col-md-3 text-center">
+            <div class="mb-3">
+                <span class="badge bg-primary rounded-circle p-3" style="font-size: 1.5rem;">1</span>
+            </div>
+            <h5>Report</h5>
+            <p>Submit a report with ID details and photo</p>
+        </div>
+        <div class="col-md-3 text-center">
+            <div class="mb-3">
+                <span class="badge bg-primary rounded-circle p-3" style="font-size: 1.5rem;">2</span>
+            </div>
+            <h5>Verify</h5>
+            <p>Admin team verifies the report</p>
+        </div>
+        <div class="col-md-3 text-center">
+            <div class="mb-3">
+                <span class="badge bg-primary rounded-circle p-3" style="font-size: 1.5rem;">3</span>
+            </div>
+            <h5>Match</h5>
+            <p>System matches lost and found reports</p>
+        </div>
+        <div class="col-md-3 text-center">
+            <div class="mb-3">
+                <span class="badge bg-primary rounded-circle p-3" style="font-size: 1.5rem;">4</span>
+            </div>
+            <h5>Recover</h5>
+            <p>Owner is notified for ID recovery</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

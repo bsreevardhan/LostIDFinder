@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Report Lost ID - ID Recovery System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Report Lost ID Card</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('report_lost') }}" enctype="multipart/form-data">
+                        <h5 class="mb-3">Your Information</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="reporter_name" class="form-label">Your Name *</label>
+                                <input type="text" class="form-control" id="reporter_name" name="reporter_name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="reporter_email" class="form-label">Your Email *</label>
+                                <input type="email" class="form-control" id="reporter_email" name="reporter_email" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reporter_phone" class="form-label">Your Phone Number</label>
+                            <input type="tel" class="form-control" id="reporter_phone" name="reporter_phone">
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5 class="mb-3">Lost ID Card Details</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_type" class="form-label">ID Type *</label>
+                                <select class="form-select" id="id_type" name="id_type" required>
+                                    <option value="">Select ID Type</option>
+                                    <option value="Student ID">Student ID</option>
+                                    <option value="Staff ID">Staff ID</option>
+                                    <option value="Employee ID">Employee ID</option>
+                                    <option value="Library Card">Library Card</option>
+                                    <option value="Access Card">Access Card</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_number" class="form-label">ID Number *</label>
+                                <input type="text" class="form-control" id="id_number" name="id_number" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="owner_name" class="form-label">Name on ID Card *</label>
+                            <input type="text" class="form-control" id="owner_name" name="owner_name" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="date_lost" class="form-label">Date Lost</label>
+                                <input type="date" class="form-control" id="date_lost" name="date_lost">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="location_lost" class="form-label">Location Lost</label>
+                                <input type="text" class="form-control" id="location_lost" name="location_lost" placeholder="e.g., Library, Cafeteria">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Additional Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Any additional details that might help identify your ID card"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="photo" class="form-label">Upload Photo (if available)</label>
+                            <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                            <small class="form-text text-muted">Accepted formats: JPG, PNG, GIF (Max 16MB)</small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="bi bi-send"></i> Submit Lost Report
+                            </button>
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

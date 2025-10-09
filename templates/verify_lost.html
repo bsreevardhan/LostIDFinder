@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Lost Report - ID Recovery System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-clipboard-check"></i> Verify Lost Report</h2>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Lost Report Details</h5>
+                </div>
+                <div class="card-body">
+                    {% if report.photo_path %}
+                    <div class="text-center mb-3">
+                        <img src="{{ url_for('uploaded_file', filename=report.photo_path.split('/')[-1]) }}" class="img-fluid rounded" style="max-height: 300px;">
+                    </div>
+                    {% endif %}
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Report ID:</th>
+                            <td>{{ report.id }}</td>
+                        </tr>
+                        <tr>
+                            <th>ID Number:</th>
+                            <td>{{ report.id_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>ID Type:</th>
+                            <td>{{ report.id_type }}</td>
+                        </tr>
+                        <tr>
+                            <th>Owner Name:</th>
+                            <td>{{ report.owner_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Reporter:</th>
+                            <td>{{ report.reporter_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email:</th>
+                            <td>{{ report.reporter_email }}</td>
+                        </tr>
+                        <tr>
+                            <th>Phone:</th>
+                            <td>{{ report.reporter_phone or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date Lost:</th>
+                            <td>{{ report.date_lost or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Location:</th>
+                            <td>{{ report.location_lost or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Description:</th>
+                            <td>{{ report.description or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                {% if report.status == 'reported' %}
+                                    <span class="badge bg-warning">Reported</span>
+                                {% elif report.status == 'verified' %}
+                                    <span class="badge bg-info">Verified</span>
+                                {% elif report.status == 'matched' %}
+                                    <span class="badge bg-primary">Matched</span>
+                                {% elif report.status == 'recovered' %}
+                                    <span class="badge bg-success">Recovered</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('verify_lost', report_id=report.id) }}">
+                        {% if report.status == 'reported' %}
+                        <button type="submit" name="action" value="verify" class="btn btn-info w-100 mb-2">
+                            <i class="bi bi-check-circle"></i> Verify Report
+                        </button>
+                        {% endif %}
+                        
+                        {% if report.status in ['reported', 'verified'] and potential_matches %}
+                        <div class="mb-2">
+                            <label class="form-label">Match with Found Report:</label>
+                            <select class="form-select mb-2" name="found_report_id">
+                                <option value="">Select a match...</option>
+                                {% for match in potential_matches %}
+                                <option value="{{ match.id }}">ID #{{ match.id }} - {{ match.id_number or 'N/A' }} ({{ match.finder_name }})</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" name="action" value="match" class="btn btn-primary w-100">
+                                <i class="bi bi-link"></i> Create Match
+                            </button>
+                        </div>
+                        {% endif %}
+                        
+                        {% if report.status == 'matched' %}
+                        <button type="submit" name="action" value="recovered" class="btn btn-success w-100">
+                            <i class="bi bi-check2-all"></i> Mark as Recovered
+                        </button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Potential Matches ({{ potential_matches|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if potential_matches %}
+                        {% for match in potential_matches %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                {% if match.photo_path %}
+                                <div class="text-center mb-2">
+                                    <img src="{{ url_for('uploaded_file', filename=match.photo_path.split('/')[-1]) }}" class="img-fluid rounded" style="max-height: 200px;">
+                                </div>
+                                {% endif %}
+                                <h6>Found Report #{{ match.id }}</h6>
+                                <p class="mb-1"><strong>ID Number:</strong> {{ match.id_number or 'Not visible' }}</p>
+                                <p class="mb-1"><strong>Owner Name:</strong> {{ match.owner_name or 'Not visible' }}</p>
+                                <p class="mb-1"><strong>ID Type:</strong> {{ match.id_type }}</p>
+                                <p class="mb-1"><strong>Finder:</strong> {{ match.finder_name }}</p>
+                                <p class="mb-1"><strong>Location:</strong> {{ match.location_found or 'N/A' }}</p>
+                                <p class="mb-0"><strong>Status:</strong> 
+                                    {% if match.status == 'reported' %}
+                                        <span class="badge bg-warning">Reported</span>
+                                    {% elif match.status == 'verified' %}
+                                        <span class="badge bg-info">Verified</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No potential matches found. Check the Found Reports tab for manual matching.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
