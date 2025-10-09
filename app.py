@@ -1,4 +1,5 @@
 import os
+import requests
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
@@ -24,6 +25,67 @@ login_manager.login_view = 'login'
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def send_email_notification(to_email, to_name, subject, message):
+    """Send email notification using Brevo API"""
+    brevo_api_key = os.environ.get('BREVO_API_KEY')
+    
+    if not brevo_api_key:
+        print("Warning: BREVO_API_KEY not configured. Email notification skipped.")
+        return False
+    
+    url = "https://api.brevo.com/v3/smtp/email"
+    
+    headers = {
+        'accept': 'application/json',
+        'api-key': brevo_api_key,
+        'content-type': 'application/json'
+    }
+    
+    sender_email = os.environ.get('SENDER_EMAIL', 'noreply@idrecovery.com')
+    sender_name = os.environ.get('SENDER_NAME', 'ID Recovery System')
+    
+    payload = {
+        "sender": {
+            "name": sender_name,
+            "email": sender_email
+        },
+        "to": [
+            {
+                "email": to_email,
+                "name": to_name
+            }
+        ],
+        "subject": subject,
+        "htmlContent": f"""
+        <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #667eea;">ID Recovery System</h2>
+                    <p>Dear {to_name},</p>
+                    {message}
+                    <hr style="border: 1px solid #eee; margin: 20px 0;">
+                    <p style="color: #666; font-size: 12px;">
+                        This is an automated message from the ID Recovery System. 
+                        Please do not reply to this email.
+                    </p>
+                </div>
+            </body>
+        </html>
+        """
+    }
+    
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        if response.status_code in [200, 201]:
+            print(f"Email sent successfully to {to_email}")
+            return True
+        else:
+            print(f"Failed to send email: {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        print(f"Error sending email: {str(e)}")
+        return False
 
 class Admin(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -230,7 +292,58 @@ def verify_lost(report_id):
                 if found_report:
                     found_report.matched_with = report_id
                     found_report.status = 'matched'
-                flash('Reports matched successfully!', 'success')
+                    
+                    subject = "Good News! Your Lost ID Card Has Been Found"
+                    message = f"""
+                    <p>We have good news for you! Your lost <strong>{report.id_type}</strong> has been found and matched in our system.</p>
+                    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <h3 style="color: #667eea; margin-top: 0;">ID Details:</h3>
+                        <p><strong>ID Number:</strong> {report.id_number}</p>
+                        <p><strong>Owner Name:</strong> {report.owner_name}</p>
+                        <p><strong>Type:</strong> {report.id_type}</p>
+                        {f'<p><strong>Found Location:</strong> {found_report.location_found}</p>' if found_report.location_found else ''}
+                    </div>
+                    <p>The person who found your ID card has been notified. Our admin team will coordinate the return of your ID card.</p>
+                    <p>If you have any questions, please contact us at your earliest convenience.</p>
+                    <p>Best regards,<br>ID Recovery Team</p>
+                    """
+                    
+                    email_sent_to_owner = send_email_notification(
+                        report.reporter_email,
+                        report.reporter_name,
+                        subject,
+                        message
+                    )
+                    
+                    finder_subject = "Thank You for Reporting a Found ID Card"
+                    finder_message = f"""
+                    <p>Thank you for your kindness in reporting a found <strong>{found_report.id_type}</strong>!</p>
+                    <p>We have successfully matched the ID card you found with a lost report in our system.</p>
+                    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <h3 style="color: #667eea; margin-top: 0;">Next Steps:</h3>
+                        <p>Our admin team will contact you soon to arrange the return of the ID card to its rightful owner.</p>
+                        <p><strong>ID Type:</strong> {found_report.id_type}</p>
+                        {f'<p><strong>ID Number:</strong> {found_report.id_number}</p>' if found_report.id_number else ''}
+                    </div>
+                    <p>Your help in reuniting people with their lost belongings is greatly appreciated!</p>
+                    <p>Best regards,<br>ID Recovery Team</p>
+                    """
+                    
+                    email_sent_to_finder = send_email_notification(
+                        found_report.finder_email,
+                        found_report.finder_name,
+                        finder_subject,
+                        finder_message
+                    )
+                    
+                    if not os.environ.get('BREVO_API_KEY'):
+                        flash('Reports matched successfully! Note: Email notifications are disabled (BREVO_API_KEY not configured).', 'warning')
+                    elif email_sent_to_owner and email_sent_to_finder:
+                        flash('Reports matched successfully! Email notifications sent to both parties.', 'success')
+                    elif email_sent_to_owner or email_sent_to_finder:
+                        flash('Reports matched successfully! Some email notifications failed to send. Check logs.', 'warning')
+                    else:
+                        flash('Reports matched successfully! Email notifications failed to send. Check logs.', 'warning')
         elif action == 'recovered':
             report.status = 'recovered'
             flash('Report marked as recovered!', 'success')
@@ -268,7 +381,58 @@ def verify_found(report_id):
                 if lost_report:
                     lost_report.matched_with = report_id
                     lost_report.status = 'matched'
-                flash('Reports matched successfully!', 'success')
+                    
+                    subject = "Good News! Your Lost ID Card Has Been Found"
+                    message = f"""
+                    <p>We have good news for you! Your lost <strong>{lost_report.id_type}</strong> has been found and matched in our system.</p>
+                    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <h3 style="color: #667eea; margin-top: 0;">ID Details:</h3>
+                        <p><strong>ID Number:</strong> {lost_report.id_number}</p>
+                        <p><strong>Owner Name:</strong> {lost_report.owner_name}</p>
+                        <p><strong>Type:</strong> {lost_report.id_type}</p>
+                        {f'<p><strong>Found Location:</strong> {report.location_found}</p>' if report.location_found else ''}
+                    </div>
+                    <p>The person who found your ID card has been notified. Our admin team will coordinate the return of your ID card.</p>
+                    <p>If you have any questions, please contact us at your earliest convenience.</p>
+                    <p>Best regards,<br>ID Recovery Team</p>
+                    """
+                    
+                    email_sent_to_owner = send_email_notification(
+                        lost_report.reporter_email,
+                        lost_report.reporter_name,
+                        subject,
+                        message
+                    )
+                    
+                    finder_subject = "Thank You for Reporting a Found ID Card"
+                    finder_message = f"""
+                    <p>Thank you for your kindness in reporting a found <strong>{report.id_type}</strong>!</p>
+                    <p>We have successfully matched the ID card you found with a lost report in our system.</p>
+                    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <h3 style="color: #667eea; margin-top: 0;">Next Steps:</h3>
+                        <p>Our admin team will contact you soon to arrange the return of the ID card to its rightful owner.</p>
+                        <p><strong>ID Type:</strong> {report.id_type}</p>
+                        {f'<p><strong>ID Number:</strong> {report.id_number}</p>' if report.id_number else ''}
+                    </div>
+                    <p>Your help in reuniting people with their lost belongings is greatly appreciated!</p>
+                    <p>Best regards,<br>ID Recovery Team</p>
+                    """
+                    
+                    email_sent_to_finder = send_email_notification(
+                        report.finder_email,
+                        report.finder_name,
+                        finder_subject,
+                        finder_message
+                    )
+                    
+                    if not os.environ.get('BREVO_API_KEY'):
+                        flash('Reports matched successfully! Note: Email notifications are disabled (BREVO_API_KEY not configured).', 'warning')
+                    elif email_sent_to_owner and email_sent_to_finder:
+                        flash('Reports matched successfully! Email notifications sent to both parties.', 'success')
+                    elif email_sent_to_owner or email_sent_to_finder:
+                        flash('Reports matched successfully! Some email notifications failed to send. Check logs.', 'warning')
+                    else:
+                        flash('Reports matched successfully! Email notifications failed to send. Check logs.', 'warning')
         elif action == 'recovered':
             report.status = 'recovered'
             flash('Report marked as recovered!', 'success')

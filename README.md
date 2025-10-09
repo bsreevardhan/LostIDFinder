@@ -11,6 +11,7 @@ A Flask-based web application for managing lost and found ID cards with secure a
 - **Status Tracking**: Track reports through stages (reported, verified, matched, recovered)
 - **Photo Upload**: Support for ID card photo uploads
 - **Automatic Matching**: System suggests potential matches based on ID details
+- **Email Notifications**: Automatic email alerts to lost ID owners and finders when matches are made (via Brevo API)
 
 ## Technology Stack
 
@@ -132,6 +133,31 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed production deployment instructio
 ## Environment Variables
 
 - `SESSION_SECRET`: Secret key for session management (set in production)
+- `BREVO_API_KEY`: Brevo (Sendinblue) API key for email notifications (optional)
+- `SENDER_EMAIL`: Email address to send notifications from (default: noreply@idrecovery.com)
+- `SENDER_NAME`: Sender name for email notifications (default: ID Recovery System)
+
+### Email Notification Setup
+
+The system supports email notifications via Brevo (formerly Sendinblue) API. Brevo offers a free tier with 300 emails/day.
+
+**To enable email notifications:**
+
+1. Sign up for a free account at [Brevo](https://www.brevo.com/)
+2. Get your API key from Settings → SMTP & API
+3. Add the API key as an environment variable or secret:
+   ```bash
+   export BREVO_API_KEY=your_api_key_here
+   ```
+4. (Optional) Configure sender email and name:
+   ```bash
+   export SENDER_EMAIL=your-email@example.com
+   export SENDER_NAME="Your Organization"
+   ```
+
+**Note**: Email notifications are automatically sent when:
+- Lost and found reports are successfully matched
+- Both the lost ID owner and the finder receive notification emails
 
 ## License
 
