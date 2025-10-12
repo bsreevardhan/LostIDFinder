@@ -11,6 +11,8 @@ pip-delete-this-directory.txt
 venv/
 ENV/
 env/
+.env
+app/static/
 instance/
 *.db
 .DS_Store

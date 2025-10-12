@@ -11,7 +11,7 @@
 
     <div class="card mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ url_for('admin_dashboard') }}" class="row g-3">
+            <form method="GET" action="{{ url_for('admin.admin_dashboard') }}" class="row g-3">
                 <div class="col-md-4">
                     <input type="text" class="form-control" name="search" placeholder="Search by ID number, name..." value="{{ request.args.get('search', '') }}">
                 </div>
@@ -91,7 +91,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="{{ url_for('verify_lost', report_id=report.id) }}" class="btn btn-sm btn-primary">
+                                    <a href="{{ url_for('admin.verify_lost', report_id=report.id) }}" class="btn btn-sm btn-primary">
                                         <i class="bi bi-eye"></i> View
                                     </a>
                                 </td>
@@ -141,7 +141,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="{{ url_for('verify_found', report_id=report.id) }}" class="btn btn-sm btn-success">
+                                    <a href="{{ url_for('admin.verify_found', report_id=report.id) }}" class="btn btn-sm btn-success">
                                         <i class="bi bi-eye"></i> View
                                     </a>
                                 </td>
